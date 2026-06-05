@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NT Lernspiel – Wirbeltiere & Blütenpflanzen</title>
+<style>
+:root{--bg:#f7f3ea;--card:#fffdf8;--ink:#263238;--muted:#65737e;--accent:#4f8f6b;--accent2:#e2a84b;--bad:#c7524a;--good:#3f8f5f;--line:#ddd3c3}
+*{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#fbf8ef,#f0eadf);color:var(--ink)}
+header{padding:18px 16px;text-align:center;background:#fff8e7;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+h1{font-size:1.35rem;margin:0 0 4px} .sub{color:var(--muted);font-size:.95rem}
+main{max-width:980px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:14px 0;box-shadow:0 2px 12px rgba(0,0,0,.05)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+button,.btn{border:0;border-radius:14px;padding:12px 14px;background:var(--accent);color:white;font-weight:700;cursor:pointer;font-size:1rem}
+button.secondary{background:#6f7f89}.small{font-size:.9rem;padding:8px 10px}.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+button:hover{filter:brightness(.98)} button:disabled{opacity:.55;cursor:not-allowed}
+.pill{display:inline-block;padding:5px 9px;border-radius:999px;background:#eef4ed;border:1px solid #cfe0d1;margin:3px;font-size:.9rem}
+.day{border-left:6px solid var(--accent2)}
+.question{font-size:1.2rem;font-weight:800;margin-bottom:12px}
+.options{display:grid;gap:8px}.option{background:#fff;border:2px solid var(--line);color:var(--ink);text-align:left}
+.option.correct{border-color:var(--good);background:#edf8f0}.option.wrong{border-color:var(--bad);background:#fff0ef}
+.feedback{font-weight:800;margin-top:10px}.good{color:var(--good)}.bad{color:var(--bad)}
+.progress{height:12px;background:#eee2ce;border-radius:999px;overflow:hidden;margin:10px 0}.bar{height:100%;background:var(--accent);width:0%}
+.score{font-weight:800}.hidden{display:none!important}
+.dropzone{min-height:44px;border:2px dashed #cbbfae;border-radius:12px;padding:8px;margin:6px 0;background:#fff}
+.token{display:inline-block;background:#fff3d6;border:1px solid #e7c77b;border-radius:12px;padding:9px 10px;margin:5px;cursor:pointer}
+.token.selected{outline:3px solid var(--accent)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.kv{display:grid;grid-template-columns:135px 1fr;gap:8px;margin:7px 0}
+input[type=text]{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);font-size:1rem}
+.badge{font-size:2rem}.muted{color:var(--muted)}.center{text-align:center}
+hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+@media (max-width:540px){.kv{grid-template-columns:1fr} header{position:static}}
+</style>
+</head>
+<body>
+<header>
+  <h1>NT Lernspiel: Wirbeltiere & Blütenpflanzen</h1>
+  <div class="sub">4 Tage · Klasse 5 · kurze Aufgaben · direktes Feedback</div>
+</header>
+<main>
+<section id="home" class="card">
+  <h2>Start</h2>
+  <p>Wähle einen Lerntag. Jede Runde dauert etwa 10–20 Minuten. Falsche Antworten werden am Ende nochmal wiederholt.</p>
+  <div class="grid">
+    <button onclick="startDay(1)">Tag 1: Wirbeltiere</button>
+    <button onclick="startDay(2)">Tag 2: Evolution & Zucht</button>
+    <button onclick="startDay(3)">Tag 3: Blütenpflanzen</button>
+    <button onclick="startDay(4)">Tag 4: Generalprobe</button>
+  </div>
+  <hr>
+  <div class="grid">
+    <button class="secondary" onclick="startMode('random')">Zufallsquiz 20 Fragen</button>
+    <button class="secondary" onclick="showCheat()">Eltern-Spickzettel</button>
+  </div>
+</section>
+
+<section id="cheat" class="card hidden">
+  <h2>Eltern-Spickzettel</h2>
+  <p><b>Wirbeltiere:</b> Fische = Schuppen/Kiemen/Eier/wechselwarm; Amphibien = feuchte Haut/Haut+Lunge/Eier/wechselwarm; Reptilien = trockene Schuppen/Lunge/Eier/wechselwarm; Vögel = Federn/Lunge/Eier/gleichwarm; Säugetiere = Fell/Lunge/lebendgebärend/gleichwarm.</p>
+  <p><b>Evolution:</b> Variation → Selektion → Fortpflanzung/Vererbung → Mutation und Wiederholung.</p>
+  <p><b>Blütenpflanze:</b> Wurzel, Sprossachse, Blatt, Blüte. Blüte: Kelchblatt, Kronblatt, Staubblatt, Stempel/Fruchtknoten.</p>
+  <p><b>Bestäubung/Befruchtung:</b> Pollen vom Staubbeutel auf die Narbe → Pollenschlauch wächst → männliche Zelle trifft Eizelle → Samen/Frucht entstehen.</p>
+  <button onclick="goHome()">Zurück</button>
+</section>
+
+<section id="game" class="card hidden">
+  <div class="row">
+    <button class="ghost small" onclick="goHome()">← Start</button>
+    <span id="modeTitle" class="pill"></span>
+    <span class="score" id="score"></span>
+  </div>
+  <div class="progress"><div id="bar" class="bar"></div></div>
+  <div id="task"></div>
+</section>
+
+<section id="done" class="card hidden center">
+  <div class="badge">🌟</div>
+  <h2>Runde geschafft</h2>
+  <p id="doneText"></p>
+  <div id="reviewBox"></div>
+  <button onclick="goHome()">Zurück zur Übersicht</button>
+</section>
+</main>
+
+<script>
+const allQuestions = [
+{day:1,type:"mc",q:"Welche Wirbeltierklasse hat Schuppen, Kiemen und legt Eier?",a:"Fische",o:["Fische","Reptilien","Amphibien","Vögel"],why:"Fische atmen mit Kiemen und haben meist Schuppen."},
+{day:1,type:"mc",q:"Warum ist ein Delfin kein Fisch?",a:"Er ist ein Säugetier: Lunge, lebendgebärend, gleichwarm.",o:["Er ist ein Säugetier: Lunge, lebendgebärend, gleichwarm.","Er legt Eier.","Er hat Kiemen.","Er ist wechselwarm."],why:"Delfine atmen mit Lungen und bringen lebende Junge zur Welt."},
+{day:1,type:"mc",q:"Welche Klasse ist wechselwarm und hat trockene Schuppen?",a:"Reptilien",o:["Reptilien","Vögel","Säugetiere","Fische"],why:"Reptilien haben trockene Hornschuppen und sind wechselwarm."},
+{day:1,type:"mc",q:"Welche Klassen sind gleichwarm?",a:"Vögel und Säugetiere",o:["Fische und Amphibien","Reptilien und Fische","Vögel und Säugetiere","Amphibien und Reptilien"],why:"Gleichwarm bedeutet: Körpertemperatur bleibt etwa gleich."},
+{day:1,type:"mc",q:"Zu welcher Klasse gehört der Frosch?",a:"Amphibien",o:["Fische","Amphibien","Reptilien","Säugetiere"],why:"Frösche leben an Land und im Wasser, haben feuchte Haut."},
+{day:1,type:"mc",q:"Zu welcher Klasse gehört die Amsel?",a:"Vögel",o:["Vögel","Reptilien","Säugetiere","Amphibien"],why:"Vögel haben Federn, legen Eier und atmen mit Lungen."},
+{day:1,type:"mc",q:"Was haben alle Wirbeltiere gemeinsam?",a:"Sie haben eine Wirbelsäule.",o:["Sie haben eine Wirbelsäule.","Sie legen Eier.","Sie haben Fell.","Sie leben an Land."],why:"Wirbeltiere heißen so, weil sie Wirbel bzw. eine Wirbelsäule haben."},
+{day:1,type:"match",q:"Ordne die Merkmale zu.",pairs:[["Fische","Kiemen, Schuppen, Eier"],["Amphibien","feuchte Haut, Haut+Lunge"],["Reptilien","trockene Schuppen, Lunge"],["Vögel","Federn, Eier"],["Säugetiere","Fell, lebende Junge"]]},
+{day:2,type:"order",q:"Bringe die Schritte der Evolution in die richtige Reihenfolge.",items:["Variation","Selektion","Fortpflanzung/Vererbung","Mutation und Wiederholung"]},
+{day:2,type:"mc",q:"Was bedeutet Variation?",a:"Lebewesen einer Art unterscheiden sich.",o:["Lebewesen einer Art unterscheiden sich.","Alle Tiere sind gleich.","Der Mensch wählt Tiere aus.","Eine Pflanze wird bestäubt."],why:"Variation heißt: Es gibt Unterschiede, z. B. Größe, Farbe, Fell."},
+{day:2,type:"mc",q:"Was bedeutet Selektion?",a:"Besser angepasste Lebewesen überleben häufiger.",o:["Besser angepasste Lebewesen überleben häufiger.","Tiere werden gefüttert.","Pflanzen bilden Blüten.","Alle Tiere sterben aus."],why:"Bei Selektion setzen sich vorteilhafte Merkmale häufiger durch."},
+{day:2,type:"mc",q:"Was ist Evolution?",a:"Langsame Veränderung und Anpassung von Lebewesen über sehr lange Zeit.",o:["Langsame Veränderung und Anpassung von Lebewesen über sehr lange Zeit.","Training eines Haustiers.","Eine einzelne Geburt.","Der Bau einer Blüte."],why:"Evolution passiert über viele Generationen."},
+{day:2,type:"mc",q:"Was ist Zucht?",a:"Der Mensch wählt Tiere oder Pflanzen mit gewünschten Eigenschaften aus.",o:["Der Mensch wählt Tiere oder Pflanzen mit gewünschten Eigenschaften aus.","Zufällige Entwicklung ohne Menschen.","Eine Blüte bildet Pollen.","Ein Tier atmet mit Kiemen."],why:"Bei Zucht entscheidet der Mensch, welche Eigenschaften vermehrt werden sollen."},
+{day:2,type:"mc",q:"Was ist eine Qualzucht?",a:"Zucht auf Merkmale, die Tieren gesundheitlich schaden.",o:["Zucht auf Merkmale, die Tieren gesundheitlich schaden.","Eine besonders schnelle Evolution.","Eine Pflanze ohne Blüte.","Ein Tier mit Wirbelsäule."],why:"Beispiel: sehr kurze Schnauzen können Atemprobleme verursachen."},
+{day:2,type:"fill",q:"Fülle den Satz: Evolution läuft über viele ____ ab.",a:"Generationen",hint:"Kinder, Enkel, Urenkel ..."},
+{day:3,type:"mc",q:"Welche vier Grundorgane hat eine Blütenpflanze?",a:"Wurzel, Sprossachse, Blatt, Blüte",o:["Wurzel, Sprossachse, Blatt, Blüte","Kiemen, Fell, Schuppen, Federn","Narbe, Pollen, Lunge, Ei","Stamm, Beine, Kopf, Schwanz"],why:"Das sind die wichtigsten Grundorgane der Blütenpflanze."},
+{day:3,type:"mc",q:"Welche Aufgabe hat die Wurzel?",a:"Verankerung und Aufnahme von Wasser/Mineralstoffen",o:["Verankerung und Aufnahme von Wasser/Mineralstoffen","Fortpflanzung","Fliegen","Atmen mit Kiemen"],why:"Wurzeln halten die Pflanze fest und nehmen Wasser auf."},
+{day:3,type:"mc",q:"Welche Aufgabe hat das Blatt?",a:"Fotosynthese",o:["Fotosynthese","Eier legen","Beute reißen","Pollen transportieren"],why:"In den Blättern stellt die Pflanze mit Licht Traubenzucker her."},
+{day:3,type:"mc",q:"Wo entsteht der Pollen?",a:"Im Staubbeutel",o:["Im Staubbeutel","In der Wurzel","Im Blatt","Im Knochen"],why:"Staubbeutel gehören zu den männlichen Fortpflanzungsorganen."},
+{day:3,type:"mc",q:"Was passiert bei der Bestäubung?",a:"Pollen gelangt auf die Narbe einer Blüte.",o:["Pollen gelangt auf die Narbe einer Blüte.","Ein Rind kaut wieder.","Ein Fisch atmet.","Ein Tier bekommt Fell."],why:"Bestäubung ist der Transport von Pollen zur Narbe."},
+{day:3,type:"order",q:"Sortiere: Von der Bestäubung zur Frucht.",items:["Pollen landet auf der Narbe","Pollenschlauch wächst","Befruchtung der Eizelle","Samen entsteht","Frucht entsteht"]},
+{day:3,type:"match",q:"Ordne die Pflanzenorgane ihren Aufgaben zu.",pairs:[["Wurzel","Verankerung, Wasseraufnahme"],["Sprossachse","trägt Blätter und Blüten"],["Blatt","Fotosynthese"],["Blüte","Fortpflanzung"]]},
+{day:4,type:"mc",q:"Katze und Rind: Was passt zur Katze?",a:"Fleischfresser mit großen Eckzähnen",o:["Fleischfresser mit großen Eckzähnen","Pflanzenfresser mit Mahlzähnen","Kiemen und Schuppen","Federn und Schnabel"],why:"Katzen fangen Beute und nutzen Eckzähne zum Packen/Reißen."},
+{day:4,type:"mc",q:"Was passt zum Rind?",a:"Pflanzenfresser mit breiten Backenzähnen",o:["Pflanzenfresser mit breiten Backenzähnen","Fleischfresser mit Fangzähnen","Lebt nur im Wasser","Hat Federn"],why:"Rinder zermahlen Pflanzen mit breiten Backenzähnen."},
+{day:4,type:"fill",q:"Nenne ein Kennzeichen des Lebendigen: Lebewesen können sich ____.",a:"fortpflanzen",hint:"Nachkommen bekommen"},
+{day:4,type:"mc",q:"Welche 5 Kennzeichen des Lebendigen passen?",a:"Bewegung, Wachstum/Entwicklung, Fortpflanzung, Reizbarkeit, Stoffwechsel",o:["Bewegung, Wachstum/Entwicklung, Fortpflanzung, Reizbarkeit, Stoffwechsel","Fell, Federn, Schuppen, Kiemen, Lunge","Wurzel, Sprossachse, Blatt, Blüte, Frucht","Auto, Haus, Stein, Wasser, Luft"],why:"Diese fünf Merkmale werden typischerweise für Lebewesen gelernt."},
+{day:4,type:"fill",q:"Ein Steckbrief enthält z. B. Name, Klasse, Lebensraum, Nahrung und ____.",a:"Fortpflanzung",hint:"Wie bekommt das Tier Nachwuchs?"},
+];
+
+let questions=[], idx=0, score=0, wrong=[];
+function shuffle(a){return [...a].sort(()=>Math.random()-0.5)}
+function goHome(){document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));home.classList.remove("hidden")}
+function showCheat(){document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));cheat.classList.remove("hidden")}
+function startDay(d){questions=allQuestions.filter(x=>x.day===d); start("Tag "+d, questions)}
+function startMode(m){questions=shuffle(allQuestions).slice(0,20); start("Zufallsquiz", questions)}
+function start(title, qs){idx=0;score=0;wrong=[];questions=shuffle(qs);document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));game.classList.remove("hidden");modeTitle.textContent=title;render()}
+function update(){scoreEl = document.getElementById("score"); scoreEl.textContent=`Punkte: ${score}/${questions.length}`; document.getElementById("bar").style.width=((idx)/questions.length*100)+"%"}
+function render(){update(); if(idx>=questions.length){finish();return} const q=questions[idx]; const t=document.getElementById("task"); t.innerHTML=`<div class="question">${idx+1}. ${q.q}</div>`; if(q.type==="mc") renderMC(q,t); if(q.type==="fill") renderFill(q,t); if(q.type==="order") renderOrder(q,t); if(q.type==="match") renderMatch(q,t);}
+function next(){idx++;render()}
+function mark(ok,q){if(ok)score++;else wrong.push(q.q); setTimeout(next,900)}
+function renderMC(q,t){let opts=shuffle(q.o); let div=document.createElement("div");div.className="options";opts.forEach(o=>{let b=document.createElement("button");b.className="option";b.textContent=o;b.onclick=()=>{[...div.children].forEach(x=>x.disabled=true); if(o===q.a){b.classList.add("correct"); addFb(t,"Richtig. "+q.why,true); mark(true,q)} else {b.classList.add("wrong"); [...div.children].find(x=>x.textContent===q.a)?.classList.add("correct"); addFb(t,"Noch nicht. "+q.why,false); mark(false,q)}};div.appendChild(b)});t.appendChild(div)}
+function renderFill(q,t){t.innerHTML+=`<p class="muted">Tipp: ${q.hint}</p><input id="ans" type="text" placeholder="Antwort eintippen..."><p><button onclick="checkFill()">Prüfen</button></p>`}
+function checkFill(){let q=questions[idx];let val=document.getElementById("ans").value.trim().toLowerCase(); let ok=val.includes(q.a.toLowerCase()); addFb(task, ok?`Richtig: ${q.a}`:`Gesucht war: ${q.a}`, ok); mark(ok,q)}
+function renderOrder(q,t){let items=shuffle(q.items);let chosen=[];let box=document.createElement("div");let out=document.createElement("div");out.className="dropzone";out.innerHTML="<b>Deine Reihenfolge:</b><br>";items.forEach(it=>{let s=document.createElement("span");s.className="token";s.textContent=it;s.onclick=()=>{if(chosen.includes(it))return;chosen.push(it);s.style.opacity=.35;out.innerHTML="<b>Deine Reihenfolge:</b><br>"+chosen.map(x=>`<span class='pill'>${x}</span>`).join("");};box.appendChild(s)});t.appendChild(box);t.appendChild(out);let b=document.createElement("button");b.textContent="Prüfen";b.onclick=()=>{let ok=JSON.stringify(chosen)===JSON.stringify(q.items);addFb(t,ok?"Richtig sortiert.":"Noch nicht. Richtig: "+q.items.join(" → "),ok);mark(ok,q)};t.appendChild(b)}
+function renderMatch(q,t){let left=q.pairs.map(p=>p[0]);let right=shuffle(q.pairs.map(p=>p[1]));let html="";left.forEach((l,i)=>{html+=`<div class="kv"><b>${l}</b><select id="m${i}"><option value="">Bitte wählen</option>${right.map(r=>`<option>${r}</option>`).join("")}</select></div>`});t.innerHTML+=html+`<button onclick="checkMatch()">Prüfen</button>`}
+function checkMatch(){let q=questions[idx];let ok=true;q.pairs.forEach((p,i)=>{if(document.getElementById("m"+i).value!==p[1])ok=false});addFb(task,ok?"Alles richtig zugeordnet.":"Noch nicht. Schau dir die Tabelle nochmal an.",ok);mark(ok,q)}
+function addFb(t,msg,ok){let p=document.createElement("div");p.className="feedback "+(ok?"good":"bad");p.textContent=msg;t.appendChild(p)}
+function finish(){document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));done.classList.remove("hidden");document.getElementById("doneText").textContent=`Ergebnis: ${score} von ${questions.length} Punkten.`;document.getElementById("bar").style.width="100%";let rb=document.getElementById("reviewBox"); if(wrong.length){rb.innerHTML="<h3>Nochmal anschauen:</h3>"+wrong.map(w=>`<p class='pill'>${w}</p>`).join("")}else{rb.innerHTML="<p class='good'><b>Keine Fehler in dieser Runde.</b></p>"}}
+</script>
+</body>
+</html>
