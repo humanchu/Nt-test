@@ -125,7 +125,14 @@ function start(title, qs){idx=0;score=0;wrong=[];questions=shuffle(qs);document.
 function update(){scoreEl = document.getElementById("score"); scoreEl.textContent=`Punkte: ${score}/${questions.length}`; document.getElementById("bar").style.width=((idx)/questions.length*100)+"%"}
 function render(){update(); if(idx>=questions.length){finish();return} const q=questions[idx]; const t=document.getElementById("task"); t.innerHTML=`<div class="question">${idx+1}. ${q.q}</div>`; if(q.type==="mc") renderMC(q,t); if(q.type==="fill") renderFill(q,t); if(q.type==="order") renderOrder(q,t); if(q.type==="match") renderMatch(q,t);}
 function next(){idx++;render()}
-function mark(ok,q){if(ok)score++;else wrong.push(q.q); setTimeout(next,900)}
+function mark(ok,q){
+if(ok)score++;else wrong.push(q.q);
+let btn=document.createElement("button");
+btn.textContent="Weiter ➜";
+btn.style.marginTop="12px";
+btn.onclick=next;
+task.appendChild(btn);
+}
 function renderMC(q,t){let opts=shuffle(q.o); let div=document.createElement("div");div.className="options";opts.forEach(o=>{let b=document.createElement("button");b.className="option";b.textContent=o;b.onclick=()=>{[...div.children].forEach(x=>x.disabled=true); if(o===q.a){b.classList.add("correct"); addFb(t,"Richtig. "+q.why,true); mark(true,q)} else {b.classList.add("wrong"); [...div.children].find(x=>x.textContent===q.a)?.classList.add("correct"); addFb(t,"Noch nicht. "+q.why,false); mark(false,q)}};div.appendChild(b)});t.appendChild(div)}
 function renderFill(q,t){t.innerHTML+=`<p class="muted">Tipp: ${q.hint}</p><input id="ans" type="text" placeholder="Antwort eintippen..."><p><button onclick="checkFill()">Prüfen</button></p>`}
 function checkFill(){let q=questions[idx];let val=document.getElementById("ans").value.trim().toLowerCase(); let ok=val.includes(q.a.toLowerCase()); addFb(task, ok?`Richtig: ${q.a}`:`Gesucht war: ${q.a}`, ok); mark(ok,q)}
