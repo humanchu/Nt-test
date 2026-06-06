@@ -216,7 +216,18 @@ function render(){update(); if(idx>=questions.length){finish();return} const q=q
 function next(){idx++;render()}
 function addFb(msg,ok){let p=document.createElement("div");p.className="feedback "+(ok?"good":"bad");p.textContent=msg;task.appendChild(p)}
 function addNext(){let b=document.createElement("button");b.textContent="Weiter ➜";b.style.marginTop="12px";b.onclick=next;task.appendChild(b)}
-function mark(ok,q){if(ok)score++;else{wrong.push(q.q);setMistakes(getMistakes().concat([q.q]))} update(); addNext()}
+function mark(ok,q){
+if(ok){
+ score++;
+ let m=getMistakes().filter(x=>x!==q.q);
+ setMistakes(m);
+}else{
+ wrong.push(q.q);
+ setMistakes(getMistakes().concat([q.q]));
+}
+update();
+addNext()
+}
 function disableAll(){task.querySelectorAll("button,input,select").forEach(x=>{if(x.textContent!=="Weiter ➜")x.disabled=true})}
 
 function renderMC(q){let div=document.createElement("div");div.className="options";shuffle(q.o).forEach(o=>{let b=document.createElement("button");b.className="option";b.textContent=o;b.onclick=()=>{[...div.children].forEach(x=>x.disabled=true); if(o===q.a){b.classList.add("correct");addFb("Richtig. "+q.why,true);mark(true,q)}else{b.classList.add("wrong");[...div.children].find(x=>x.textContent===q.a)?.classList.add("correct");addFb("Noch nicht. "+q.why,false);mark(false,q)}};div.appendChild(b)});task.appendChild(div)}
@@ -248,10 +259,20 @@ let svg=`<svg viewBox="0 0 420 330" aria-label="Blütenskizze">
 <ellipse cx="160" cy="112" rx="10" ry="18" fill="#f1b34c" stroke="#a36f20" transform="rotate(-20 160 112)"/>
 <line x1="260" y1="120" x2="260" y2="205" stroke="#7da15e" stroke-width="5" stroke-linecap="round"/>
 <ellipse cx="260" cy="112" rx="10" ry="18" fill="#f1b34c" stroke="#a36f20" transform="rotate(20 260 112)"/>`;
+
+<line x1="65" y1="55" x2="120" y2="70" class="labelLine"/>
+<line x1="145" y1="95" x2="160" y2="112" class="labelLine"/>
+<line x1="215" y1="65" x2="210" y2="75" class="labelLine"/>
+<line x1="215" y1="145" x2="210" y2="145" class="labelLine"/>
+<line x1="215" y1="230" x2="210" y2="230" class="labelLine"/>
+<line x1="255" y1="252" x2="225" y2="240" class="labelLine"/>
+<line x1="120" y1="250" x2="145" y2="270" class="labelLine"/>
+<line x1="145" y1="170" x2="160" y2="165" class="labelLine"/>
+
 positions.forEach(p=>{svg+=`<circle class="labelDot" cx="${p[2]}" cy="${p[3]}" r="12"/><text class="flowerText" x="${p[2]-5}" y="${p[3]+5}">${p[0]}</text>`});
 svg+=`</svg>`;
 let selects=positions.map((p,i)=>`<div class="kv"><b>${p[0]}</b><select id="f${i}"><option value="">Bitte wählen</option>${shuffle(labels).map(l=>`<option>${l}</option>`).join("")}</select></div>`).join("");
-task.innerHTML+=`<div class="flowerWrap"><div>${svg}</div><div>${selects}<button onclick="checkFlower()">Prüfen</button><p class="muted">Tipp: Die Zeichnung ist bewusst schematisch. Es geht um die typischen Prüfungsbegriffe.</p></div></div>`;
+task.innerHTML+=`<div class="flowerWrap"><div>${svg}</div><div>${selects}<button onclick="checkFlower()">Prüfen</button><p class="muted">Tipp: Folge den Linien vom Buchstaben zum jeweiligen Blütenteil. Die Skizze orientiert sich an der Schulbuchgrafik.</p></div></div>`;
 }
 function checkFlower(){const correct=["Kronblatt","Staubbeutel","Narbe","Griffel","Fruchtknoten","Samenanlage","Kelchblatt","Staubfaden"];let ok=true;correct.forEach((c,i)=>{if(document.getElementById("f"+i).value!==c)ok=false});disableAll();addFb(ok?"Blüte richtig beschriftet.":"Noch nicht. Richtig: A Kronblatt, B Staubbeutel, C Narbe, D Griffel, E Fruchtknoten, F Samenanlage, G Kelchblatt, H Staubfaden.",ok);mark(ok,questions[idx])}
 function finish(){document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));done.classList.remove("hidden");let pct=score/questions.length;stars.textContent=pct>=0.9?"⭐⭐⭐":pct>=0.75?"⭐⭐":pct>=0.6?"⭐":"↻";doneText.innerHTML=`Ergebnis: <span class="stat">${score} von ${questions.length}</span> Punkten (${Math.round(pct*100)}%).`;bar.style.width="100%";if(wrong.length){reviewBox.innerHTML="<h3>Nochmal anschauen:</h3>"+wrong.map(w=>`<p class='pill'>${w}</p>`).join("")+`<p><button onclick="startMistakes()">Fehler jetzt üben</button></p>`}else{reviewBox.innerHTML="<p class='good'><b>Keine Fehler in dieser Runde.</b></p>"}refreshMistakeInfo()}
