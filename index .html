@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NT Lernspiel – Klasse 5</title>
+<style>
+:root{--bg:#f7f3ea;--card:#fffdf8;--ink:#263238;--muted:#65737e;--accent:#4f8f6b;--accent2:#e2a84b;--bad:#c7524a;--good:#3f8f5f;--line:#ddd3c3}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#fbf8ef,#f0eadf);color:var(--ink)}
+header{padding:18px 16px;text-align:center;background:#fff8e7;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+h1{font-size:1.35rem;margin:0 0 4px}.sub{color:var(--muted);font-size:.95rem}
+main{max-width:1050px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:14px 0;box-shadow:0 2px 12px rgba(0,0,0,.05)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+button,.btn{border:0;border-radius:14px;padding:12px 14px;background:var(--accent);color:white;font-weight:800;cursor:pointer;font-size:1rem}
+button.secondary{background:#6f7f89}.small{font-size:.9rem;padding:8px 10px}.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+button:hover{filter:brightness(.98)}button:disabled{opacity:.55;cursor:not-allowed}
+.pill{display:inline-block;padding:5px 9px;border-radius:999px;background:#eef4ed;border:1px solid #cfe0d1;margin:3px;font-size:.9rem}
+.question{font-size:1.18rem;font-weight:850;margin-bottom:12px}
+.options{display:grid;gap:8px}.option{background:#fff;border:2px solid var(--line);color:var(--ink);text-align:left}
+.option.correct{border-color:var(--good);background:#edf8f0}.option.wrong{border-color:var(--bad);background:#fff0ef}
+.feedback{font-weight:850;margin-top:12px;padding:10px;border-radius:12px}.good{color:var(--good);background:#eef8f1}.bad{color:var(--bad);background:#fff0ef}
+.progress{height:12px;background:#eee2ce;border-radius:999px;overflow:hidden;margin:10px 0}.bar{height:100%;background:var(--accent);width:0%}
+.score{font-weight:850}.hidden{display:none!important}
+.dropzone{min-height:44px;border:2px dashed #cbbfae;border-radius:12px;padding:8px;margin:6px 0;background:#fff}
+.token{display:inline-block;background:#fff3d6;border:1px solid #e7c77b;border-radius:12px;padding:9px 10px;margin:5px;cursor:pointer}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.kv{display:grid;grid-template-columns:160px 1fr;gap:8px;margin:7px 0;align-items:center}
+input[type=text],select{width:100%;padding:11px;border-radius:12px;border:1px solid var(--line);font-size:1rem;background:white}
+.badge{font-size:2rem}.muted{color:var(--muted)}.center{text-align:center}
+hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+.star{font-size:2.2rem;letter-spacing:3px}.stat{font-weight:850}
+.flowerWrap{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;align-items:start}
+svg{max-width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:16px}
+.labelLine{stroke:#6f7f89;stroke-width:2}.labelDot{fill:#4f8f6b}.flowerText{font-size:15px;font-weight:800;fill:#263238}
+@media (max-width:720px){.flowerWrap{grid-template-columns:1fr}.kv{grid-template-columns:1fr}header{position:static}}
+</style>
+</head>
+<body>
+<header>
+  <h1>NT Lernspiel: Wirbeltiere, Evolution & Blütenpflanzen</h1>
+  <div class="sub">Klasse 5 · prüfungsnah · mit Fehlertraining und Blüte beschriften</div>
+</header>
+<main>
+<section id="home" class="card">
+  <h2>Start</h2>
+  <p>Jede Tagesrunde hat mindestens 20 Aufgaben. Nach jeder Antwort bleibt die Erklärung stehen, bis du auf <b>Weiter</b> klickst.</p>
+  <div class="grid">
+    <button onclick="startDay(1)">Tag 1: Wirbeltiere</button>
+    <button onclick="startDay(2)">Tag 2: Evolution & Zucht</button>
+    <button onclick="startDay(3)">Tag 3: Blütenpflanzen</button>
+    <button onclick="startDay(4)">Tag 4: Generalprobe</button>
+  </div>
+  <hr>
+  <div class="grid">
+    <button class="secondary" onclick="startMode('random')">Zufallsquiz: 25 Fragen</button>
+    <button class="secondary" onclick="startMistakes()">Nur meine Fehler</button>
+    <button class="secondary" onclick="showCheat()">Eltern-Spickzettel</button>
+    <button class="ghost" onclick="resetMistakes()">Fehlerliste löschen</button>
+  </div>
+  <p id="mistakeInfo" class="muted"></p>
+</section>
+
+<section id="cheat" class="card hidden">
+  <h2>Eltern-Spickzettel</h2>
+  <p><b>Wirbeltiere:</b> Fische = Schuppen/Kiemen/Eier/wechselwarm; Amphibien = feuchte Haut/Haut+Lunge/Eier/wechselwarm; Reptilien = trockene Schuppen/Lunge/Eier/wechselwarm; Vögel = Federn/Lunge/Eier/gleichwarm; Säugetiere = Fell/Lunge/lebendgebärend/gleichwarm.</p>
+  <p><b>Kennzeichen des Lebendigen:</b> Bewegung, Wachstum/Entwicklung, Fortpflanzung, Reizbarkeit, Stoffwechsel.</p>
+  <p><b>Evolution:</b> Variation → Selektion → Fortpflanzung/Vererbung → Mutation und Wiederholung.</p>
+  <p><b>Zucht:</b> Der Mensch wählt Tiere/Pflanzen mit gewünschten Eigenschaften aus. <b>Qualzucht:</b> Zucht auf Merkmale, die Gesundheit oder Wohlbefinden schädigen.</p>
+  <p><b>Blütenpflanze:</b> Wurzel, Sprossachse, Blatt, Blüte. Blüte: Kelchblatt, Kronblatt, Staubblatt/Staubbeutel, Stempel mit Narbe/Griffel/Fruchtknoten, Samenanlage.</p>
+  <p><b>Bestäubung/Befruchtung:</b> Pollen vom Staubbeutel auf die Narbe → Pollenschlauch wächst → männliche Zelle trifft Eizelle → Samen/Frucht entstehen.</p>
+  <button onclick="goHome()">Zurück</button>
+</section>
+
+<section id="game" class="card hidden">
+  <div class="row">
+    <button class="ghost small" onclick="goHome()">← Start</button>
+    <span id="modeTitle" class="pill"></span>
+    <span class="score" id="score"></span>
+  </div>
+  <div class="progress"><div id="bar" class="bar"></div></div>
+  <div id="task"></div>
+</section>
+
+<section id="done" class="card hidden center">
+  <div id="stars" class="star"></div>
+  <h2>Runde geschafft</h2>
+  <p id="doneText"></p>
+  <div id="reviewBox"></div>
+  <button onclick="goHome()">Zurück zur Übersicht</button>
+</section>
+</main>
+
+<script>
+const Q=[
+{day:1,type:"mc",q:"Was haben alle Wirbeltiere gemeinsam?",a:"Sie haben eine Wirbelsäule.",o:["Sie haben eine Wirbelsäule.","Sie legen Eier.","Sie haben Fell.","Sie leben immer an Land."],why:"Wirbeltiere heißen so, weil sie Wirbel bzw. eine Wirbelsäule besitzen."},
+{day:1,type:"mc",q:"Welche fünf Wirbeltierklassen gibt es?",a:"Fische, Amphibien, Reptilien, Vögel, Säugetiere",o:["Fische, Amphibien, Reptilien, Vögel, Säugetiere","Insekten, Spinnen, Würmer, Schnecken, Krebse","Fische, Hunde, Katzen, Vögel, Menschen","Wasser-, Land-, Flug-, Nacht- und Haustiere"],why:"Das ist die zentrale Einteilung der Wirbeltiere."},
+{day:1,type:"mc",q:"Welche Wirbeltierklasse hat Kiemen und Schuppen?",a:"Fische",o:["Fische","Amphibien","Reptilien","Säugetiere"],why:"Fische atmen mit Kiemen und besitzen meist Schuppen."},
+{day:1,type:"mc",q:"Welche Wirbeltierklasse hat Federn?",a:"Vögel",o:["Vögel","Reptilien","Amphibien","Säugetiere"],why:"Federn sind das typische Merkmal der Vögel."},
+{day:1,type:"mc",q:"Welche Wirbeltierklasse hat Fell und säugt ihre Jungen?",a:"Säugetiere",o:["Säugetiere","Vögel","Fische","Reptilien"],why:"Säugetiere bringen meist lebende Junge zur Welt und säugen sie."},
+{day:1,type:"mc",q:"Welche Tiere sind wechselwarm?",a:"Fische, Amphibien und Reptilien",o:["Fische, Amphibien und Reptilien","Vögel und Säugetiere","Nur Säugetiere","Nur Vögel"],why:"Wechselwarm bedeutet: Die Körpertemperatur hängt stark von der Umgebung ab."},
+{day:1,type:"mc",q:"Welche Tiere sind gleichwarm?",a:"Vögel und Säugetiere",o:["Vögel und Säugetiere","Fische und Amphibien","Reptilien und Fische","Alle Wirbeltiere"],why:"Gleichwarme Tiere halten ihre Körpertemperatur ungefähr konstant."},
+{day:1,type:"mc",q:"Zu welcher Klasse gehört der Frosch?",a:"Amphibien",o:["Amphibien","Reptilien","Fische","Vögel"],why:"Frösche haben feuchte Haut und leben oft in Wasser und an Land."},
+{day:1,type:"mc",q:"Zu welcher Klasse gehört die Kreuzotter?",a:"Reptilien",o:["Reptilien","Amphibien","Fische","Säugetiere"],why:"Schlangen sind Reptilien: trockene Schuppenhaut, Lungenatmung, wechselwarm."},
+{day:1,type:"mc",q:"Zu welcher Klasse gehört die Amsel?",a:"Vögel",o:["Vögel","Säugetiere","Reptilien","Amphibien"],why:"Amseln haben Federn, legen Eier und sind gleichwarm."},
+{day:1,type:"mc",q:"Zu welcher Klasse gehört der Karpfen?",a:"Fische",o:["Fische","Amphibien","Reptilien","Vögel"],why:"Karpfen leben im Wasser und atmen mit Kiemen."},
+{day:1,type:"mc",q:"Zu welcher Klasse gehört der Delfin?",a:"Säugetiere",o:["Säugetiere","Fische","Amphibien","Reptilien"],why:"Delfine atmen mit Lungen, sind gleichwarm und bringen lebende Junge zur Welt."},
+{day:1,type:"mc",q:"Warum ist ein Pinguin ein Vogel?",a:"Er hat Federn und legt Eier.",o:["Er hat Federn und legt Eier.","Er kann gut schwimmen.","Er lebt am Meer.","Er hat Fell."],why:"Nicht Fliegen ist entscheidend, sondern typische Vogelmerkmale wie Federn und Eier."},
+{day:1,type:"mc",q:"Warum ist ein Wal kein Fisch?",a:"Er atmet mit Lungen und ist ein Säugetier.",o:["Er atmet mit Lungen und ist ein Säugetier.","Er lebt nicht im Wasser.","Er hat Kiemen.","Er legt Eier."],why:"Wale müssen zum Atmen an die Wasseroberfläche."},
+{day:1,type:"mc",q:"Welche Klasse hat meist feuchte, dünne Haut?",a:"Amphibien",o:["Amphibien","Reptilien","Vögel","Säugetiere"],why:"Amphibien können auch über die feuchte Haut atmen."},
+{day:1,type:"mc",q:"Welche Klasse hat trockene Hornschuppen?",a:"Reptilien",o:["Reptilien","Amphibien","Vögel","Fische"],why:"Trockene Schuppen schützen Reptilien vor Austrocknung."},
+{day:1,type:"mc",q:"Welche Aussage passt zu Fischen?",a:"Sie atmen mit Kiemen.",o:["Sie atmen mit Kiemen.","Sie haben Fell.","Sie säugen ihre Jungen.","Sie haben Federn."],why:"Kiemen nehmen Sauerstoff aus dem Wasser auf."},
+{day:1,type:"mc",q:"Welche Aussage passt zu Säugetieren?",a:"Sie haben meist Fell und säugen ihre Jungen.",o:["Sie haben meist Fell und säugen ihre Jungen.","Sie atmen immer mit Kiemen.","Sie haben Federn.","Sie haben immer trockene Schuppen."],why:"Das Säugen der Jungen ist namensgebend."},
+{day:1,type:"match",q:"Ordne Wirbeltierklassen und Merkmale zu.",pairs:[["Fische","Kiemen, Schuppen, Eier"],["Amphibien","feuchte Haut, Haut+Lunge"],["Reptilien","trockene Schuppen, Lunge"],["Vögel","Federn, Eier"],["Säugetiere","Fell, lebende Junge"]]},
+{day:1,type:"match",q:"Ordne Beispiele den Klassen zu.",pairs:[["Karpfen","Fische"],["Frosch","Amphibien"],["Kreuzotter","Reptilien"],["Amsel","Vögel"],["Delfin","Säugetiere"]]},
+{day:1,type:"fill",q:"Ein Tier mit Wirbelsäule nennt man ____.",a:"Wirbeltier",hint:"Name der Tiergruppe"},
+{day:1,type:"fill",q:"Fische atmen mit ____.",a:"Kiemen",hint:"Atmungsorgan im Wasser"},
+{day:1,type:"fill",q:"Vögel haben als Körperbedeckung ____.",a:"Federn",hint:"Damit können viele auch fliegen"},
+{day:1,type:"fill",q:"Säugetiere säugen ihre Jungen mit ____.",a:"Milch",hint:"Daher der Name"},
+{day:1,type:"mc",q:"Welche Klasse legt Eier mit harter Kalkschale?",a:"Vögel",o:["Vögel","Säugetiere","Amphibien","Fische"],why:"Vogeleier haben meist eine feste Kalkschale."},
+
+{day:2,type:"mc",q:"Was ist Evolution?",a:"Die langsame Veränderung von Lebewesen über viele Generationen.",o:["Die langsame Veränderung von Lebewesen über viele Generationen.","Das Trainieren eines Haustiers.","Das Wachsen einer einzelnen Pflanze.","Das Beschriften einer Blüte."],why:"Evolution betrifft Populationen über lange Zeiträume, nicht ein einzelnes Tier."},
+{day:2,type:"order",q:"Bringe die Schritte der Evolution in die richtige Reihenfolge.",items:["Variation","Selektion","Fortpflanzung/Vererbung","Mutation und Wiederholung"]},
+{day:2,type:"mc",q:"Was bedeutet Variation?",a:"Lebewesen einer Art unterscheiden sich.",o:["Lebewesen einer Art unterscheiden sich.","Alle Lebewesen sind gleich.","Der Mensch sucht Tiere aus.","Eine Blüte wird bestäubt."],why:"Variation sind Unterschiede innerhalb einer Art, z. B. Größe, Farbe oder Schnabelform."},
+{day:2,type:"mc",q:"Was bedeutet Selektion?",a:"Besser angepasste Lebewesen überleben und vermehren sich häufiger.",o:["Besser angepasste Lebewesen überleben und vermehren sich häufiger.","Alle Tiere überleben gleich oft.","Der Mensch baut eine Blüte.","Ein Fisch atmet mit Lungen."],why:"Die Umwelt wirkt wie ein Auslesefaktor."},
+{day:2,type:"mc",q:"Was bedeutet Vererbung?",a:"Eigenschaften werden an Nachkommen weitergegeben.",o:["Eigenschaften werden an Nachkommen weitergegeben.","Ein Tier wird dressiert.","Eine Pflanze verliert Blätter.","Ein Lebewesen hört auf zu wachsen."],why:"Nur vererbte Merkmale können sich über Generationen ausbreiten."},
+{day:2,type:"mc",q:"Was ist eine Mutation?",a:"Eine zufällige Veränderung des Erbguts.",o:["Eine zufällige Veränderung des Erbguts.","Eine bewusste Entscheidung des Menschen.","Ein anderes Wort für Bestäubung.","Eine Tierklasse."],why:"Mutationen können neue Varianten hervorbringen."},
+{day:2,type:"mc",q:"Warum dauert Evolution lange?",a:"Weil sie über viele Generationen abläuft.",o:["Weil sie über viele Generationen abläuft.","Weil jedes Tier sich sofort verwandelt.","Weil Menschen immer eingreifen.","Weil Pflanzen keine Samen bilden."],why:"Ein einzelnes Lebewesen entwickelt sich nicht plötzlich zu einer neuen Art."},
+{day:2,type:"mc",q:"Stammt der Mensch vom heutigen Schimpansen ab?",a:"Nein, beide haben einen gemeinsamen Vorfahren.",o:["Nein, beide haben einen gemeinsamen Vorfahren.","Ja, Menschen waren früher Schimpansen.","Nein, sie sind gar nicht verwandt.","Ja, aber nur Männer."],why:"Mensch und Schimpanse sind verwandt, aber der heutige Schimpanse ist kein direkter Vorfahr des Menschen."},
+{day:2,type:"mc",q:"Was bedeutet Anpassung?",a:"Ein Merkmal passt gut zur Umwelt und hilft beim Überleben.",o:["Ein Merkmal passt gut zur Umwelt und hilft beim Überleben.","Ein Tier zieht Kleidung an.","Eine Pflanze bekommt Federn.","Ein Fisch wird zum Vogel in einem Leben."],why:"Angepasste Merkmale erhöhen oft die Überlebens- oder Fortpflanzungschancen."},
+{day:2,type:"mc",q:"Was ist Zucht?",a:"Der Mensch wählt Tiere oder Pflanzen mit gewünschten Merkmalen aus.",o:["Der Mensch wählt Tiere oder Pflanzen mit gewünschten Merkmalen aus.","Die Umwelt wählt ohne Menschen aus.","Eine zufällige Mutation ohne Auswahl.","Ein Tier ordnet sich einer Klasse zu."],why:"Bei Zucht steuert der Mensch die Auswahl."},
+{day:2,type:"mc",q:"Was ist der wichtigste Unterschied zwischen Evolution und Zucht?",a:"Bei Zucht wählt der Mensch aus, bei Evolution die Umwelt.",o:["Bei Zucht wählt der Mensch aus, bei Evolution die Umwelt.","Evolution passiert nur bei Haustieren.","Zucht passiert ohne Menschen.","Beides ist genau dasselbe."],why:"Das ist wahrscheinlich eine typische Prüfungsfrage."},
+{day:2,type:"mc",q:"Was ist eine Qualzucht?",a:"Zucht auf Merkmale, die dem Tier schaden können.",o:["Zucht auf Merkmale, die dem Tier schaden können.","Eine besonders gesunde Zucht.","Ein Wildtier im Wald.","Eine Blütenpflanze ohne Wurzel."],why:"Beispiele sind sehr kurze Schnauzen oder extreme Körperformen."},
+{day:2,type:"mc",q:"Warum kann ein Mops ein Beispiel für Qualzucht sein?",a:"Die kurze Schnauze kann Atemprobleme verursachen.",o:["Die kurze Schnauze kann Atemprobleme verursachen.","Er hat Kiemen.","Er legt Eier.","Er ist wechselwarm."],why:"Das Aussehen wurde gezüchtet, kann aber gesundheitliche Probleme machen."},
+{day:2,type:"fill",q:"Evolution läuft über viele ____ ab.",a:"Generationen",hint:"Eltern, Kinder, Enkel ..."},
+{day:2,type:"fill",q:"Bei der Zucht wählt der ____ gewünschte Merkmale aus.",a:"Mensch",hint:"Nicht die Natur"},
+{day:2,type:"fill",q:"Bei der natürlichen Selektion überleben besser ____ Lebewesen häufiger.",a:"angepasste",hint:"Passend zur Umwelt"},
+{day:2,type:"fill",q:"Eine zufällige Veränderung des Erbguts heißt ____.",a:"Mutation",hint:"Fachwort mit M"},
+{day:2,type:"mc",q:"Welche Aussage ist richtig?",a:"Evolution verändert Populationen, nicht einzelne Tiere sofort.",o:["Evolution verändert Populationen, nicht einzelne Tiere sofort.","Ein Tier kann sich in seinem Leben zu einer neuen Art entwickeln.","Zucht passiert ohne Auswahl.","Mutationen sind immer geplant."],why:"Evolution sieht man über viele Generationen."},
+{day:2,type:"mc",q:"Warum können lange Beine bei einem Tier vorteilhaft sein?",a:"Es kann vielleicht schneller fliehen oder jagen.",o:["Es kann vielleicht schneller fliehen oder jagen.","Es wird dadurch automatisch ein Vogel.","Es braucht keine Nahrung mehr.","Es bekommt Kiemen."],why:"Ein Vorteil hängt immer von Umwelt und Lebensweise ab."},
+{day:2,type:"mc",q:"Was passiert, wenn ein vorteilhaftes Merkmal vererbt wird?",a:"Es kann in der nächsten Generation häufiger werden.",o:["Es kann in der nächsten Generation häufiger werden.","Es verschwindet immer sofort.","Es wird nicht weitergegeben.","Alle Tiere werden sofort gleich."],why:"So können sich Merkmale über viele Generationen ausbreiten."},
+{day:2,type:"order",q:"Sortiere das Beispiel: schnelle Hasen.",items:["Hasen unterscheiden sich in ihrer Schnelligkeit","Schnellere Hasen entkommen häufiger","Schnellere Hasen bekommen häufiger Nachwuchs","Das Merkmal kann häufiger werden"]},
+{day:2,type:"match",q:"Ordne die Begriffe zu.",pairs:[["Variation","Unterschiede zwischen Lebewesen"],["Selektion","Auslese durch Umwelt"],["Vererbung","Weitergabe an Nachkommen"],["Mutation","zufällige Erbgutveränderung"]]},
+{day:2,type:"match",q:"Evolution oder Zucht?",pairs:[["kurze Hundeschnauze durch Auswahl des Menschen","Zucht"],["Tarnfarbe hilft im Lebensraum","Evolution"],["Landwirt wählt Kühe mit viel Milch","Zucht"],["besser angepasste Tiere überleben häufiger","Evolution"]]},
+{day:2,type:"mc",q:"Was meint 'künstliche Selektion'?",a:"Auswahl durch den Menschen.",o:["Auswahl durch den Menschen.","Auswahl durch Wetter und Feinde.","Bestäubung durch Insekten.","Atmung mit Kiemen."],why:"Künstlich heißt hier: vom Menschen gelenkt."},
+
+{day:3,type:"mc",q:"Welche vier Grundorgane hat eine Blütenpflanze?",a:"Wurzel, Sprossachse, Blatt, Blüte",o:["Wurzel, Sprossachse, Blatt, Blüte","Kiemen, Fell, Schuppen, Federn","Narbe, Lunge, Ei, Knochen","Kopf, Brust, Bauch, Beine"],why:"Diese vier Grundorgane muss sie sicher kennen."},
+{day:3,type:"mc",q:"Welche Aufgabe hat die Wurzel?",a:"Verankerung und Aufnahme von Wasser/Mineralstoffen",o:["Verankerung und Aufnahme von Wasser/Mineralstoffen","Fortpflanzung durch Pollen","Fliegen","Atmen mit Kiemen"],why:"Wurzeln halten die Pflanze fest und nehmen Stoffe aus dem Boden auf."},
+{day:3,type:"mc",q:"Welche Aufgabe hat die Sprossachse?",a:"Sie trägt Blätter und Blüten und leitet Stoffe weiter.",o:["Sie trägt Blätter und Blüten und leitet Stoffe weiter.","Sie bildet Federn.","Sie säugt Junge.","Sie fängt Beute."],why:"Die Sprossachse ist wie Stängel/Stamm und verbindet Pflanzenteile."},
+{day:3,type:"mc",q:"Welche Aufgabe hat das Blatt?",a:"Fotosynthese",o:["Fotosynthese","Eier legen","Beute reißen","Kiemenatmung"],why:"In den Blättern stellt die Pflanze mit Licht Nährstoffe her."},
+{day:3,type:"mc",q:"Welche Aufgabe hat die Blüte?",a:"Fortpflanzung",o:["Fortpflanzung","Nur Schmuck","Atmung mit Lungen","Bewegung"],why:"In der Blüte entstehen Samen und später Früchte."},
+{day:3,type:"mc",q:"Wo entsteht Pollen?",a:"Im Staubbeutel",o:["Im Staubbeutel","In der Wurzel","Im Blatt","Im Kelchblatt"],why:"Der Staubbeutel gehört zum Staubblatt."},
+{day:3,type:"mc",q:"Was ist die Narbe?",a:"Der obere klebrige Teil des Stempels, auf dem Pollen landet.",o:["Der obere klebrige Teil des Stempels, auf dem Pollen landet.","Ein Blatt unter der Erde.","Ein männliches Tierorgan.","Eine Wirbeltierklasse."],why:"Auf der Narbe beginnt nach der Bestäubung der nächste Schritt."},
+{day:3,type:"mc",q:"Was ist Bestäubung?",a:"Pollen gelangt auf die Narbe einer Blüte.",o:["Pollen gelangt auf die Narbe einer Blüte.","Ein Samen wird gegessen.","Ein Fisch legt Eier.","Ein Tier bekommt Fell."],why:"Bestäubung ist noch nicht dasselbe wie Befruchtung."},
+{day:3,type:"mc",q:"Was passiert nach der Bestäubung?",a:"Ein Pollenschlauch wächst zur Samenanlage.",o:["Ein Pollenschlauch wächst zur Samenanlage.","Die Pflanze bekommt Kiemen.","Die Blüte wird ein Säugetier.","Die Wurzel fliegt weg."],why:"Durch den Pollenschlauch gelangt die männliche Zelle zur Eizelle."},
+{day:3,type:"mc",q:"Was ist Befruchtung?",a:"Männliche Zelle und Eizelle verschmelzen.",o:["Männliche Zelle und Eizelle verschmelzen.","Ein Insekt landet auf einem Blatt.","Ein Fisch atmet.","Eine Katze kaut Fleisch."],why:"Erst bei der Befruchtung entsteht die Grundlage für den Samen."},
+{day:3,type:"mc",q:"Was entsteht aus der Samenanlage?",a:"Ein Samen",o:["Ein Samen","Eine Feder","Eine Kieme","Ein Fell"],why:"Aus der Samenanlage entwickelt sich der Samen."},
+{day:3,type:"mc",q:"Was entsteht aus dem Fruchtknoten?",a:"Eine Frucht",o:["Eine Frucht","Ein Knochen","Eine Lunge","Ein Fell"],why:"Der Fruchtknoten entwickelt sich nach der Befruchtung oft zur Frucht."},
+{day:3,type:"order",q:"Sortiere: Von der Bestäubung zur Frucht.",items:["Pollen landet auf der Narbe","Pollenschlauch wächst","Befruchtung der Eizelle","Samen entsteht","Frucht entsteht"]},
+{day:3,type:"match",q:"Ordne Pflanzenorgane und Aufgaben zu.",pairs:[["Wurzel","Verankerung, Wasseraufnahme"],["Sprossachse","trägt Blätter und Blüten"],["Blatt","Fotosynthese"],["Blüte","Fortpflanzung"]]},
+{day:3,type:"match",q:"Ordne Blütenteile zu.",pairs:[["Staubbeutel","bildet Pollen"],["Narbe","nimmt Pollen auf"],["Fruchtknoten","enthält Samenanlagen"],["Kronblatt","lockt Insekten an"]]},
+{day:3,type:"fill",q:"Die männlichen Teile der Blüte heißen ____.",a:"Staubblätter",hint:"Dazu gehören Staubfaden und Staubbeutel"},
+{day:3,type:"fill",q:"Der obere Teil des Stempels heißt ____.",a:"Narbe",hint:"Dort landet der Pollen"},
+{day:3,type:"fill",q:"Aus der Samenanlage wird ein ____.",a:"Samen",hint:"Daraus kann eine neue Pflanze wachsen"},
+{day:3,type:"fill",q:"Aus dem Fruchtknoten wird die ____.",a:"Frucht",hint:"Zum Beispiel Apfel oder Kirsche"},
+{day:3,type:"flower",q:"Beschrifte den Aufbau einer Blüte."},
+{day:3,type:"flower",q:"Nochmal prüfungsnah: Beschrifte die Blüte."},
+{day:3,type:"mc",q:"Warum locken Kronblätter Insekten an?",a:"Damit Insekten Pollen übertragen können.",o:["Damit Insekten Pollen übertragen können.","Damit die Pflanze schwimmen kann.","Damit Fische atmen können.","Damit die Wurzel wächst."],why:"Auffällige Kronblätter helfen bei der Insektenbestäubung."},
+{day:3,type:"mc",q:"Welche Aussage ist richtig?",a:"Bestäubung kommt vor Befruchtung.",o:["Bestäubung kommt vor Befruchtung.","Befruchtung kommt immer vor Bestäubung.","Bestäubung und Befruchtung sind dasselbe.","Samen entstehen vor der Blüte."],why:"Erst Pollen auf die Narbe, dann Pollenschlauch und Befruchtung."},
+{day:3,type:"mc",q:"Was transportieren Bienen oft von Blüte zu Blüte?",a:"Pollen",o:["Pollen","Fell","Kiemen","Knochen"],why:"So helfen Bienen bei der Bestäubung."},
+
+{day:4,type:"mc",q:"Welche 5 Kennzeichen des Lebendigen passen?",a:"Bewegung, Wachstum/Entwicklung, Fortpflanzung, Reizbarkeit, Stoffwechsel",o:["Bewegung, Wachstum/Entwicklung, Fortpflanzung, Reizbarkeit, Stoffwechsel","Fell, Federn, Schuppen, Kiemen, Lunge","Wurzel, Sprossachse, Blatt, Blüte, Frucht","Auto, Haus, Stein, Wasser, Luft"],why:"Diese fünf Kennzeichen sind Grundwissen."},
+{day:4,type:"mc",q:"Was bedeutet Reizbarkeit bei Lebewesen?",a:"Sie reagieren auf Reize aus der Umwelt.",o:["Sie reagieren auf Reize aus der Umwelt.","Sie sind immer schlecht gelaunt.","Sie haben Federn.","Sie legen Eier."],why:"Ein Reiz kann Licht, Berührung, Geräusch oder Geruch sein."},
+{day:4,type:"mc",q:"Was gehört zum Stoffwechsel?",a:"Nahrung aufnehmen, Stoffe umwandeln und ausscheiden.",o:["Nahrung aufnehmen, Stoffe umwandeln und ausscheiden.","Nur schlafen.","Nur Eier legen.","Nur Fliegen."],why:"Lebewesen brauchen Energie und bauen Stoffe um."},
+{day:4,type:"mc",q:"Katze: Welche Gebiss-Aussage passt?",a:"Fleischfresser mit großen Eckzähnen.",o:["Fleischfresser mit großen Eckzähnen.","Pflanzenfresser mit breiten Mahlzähnen.","Kiemen und Schuppen.","Federn und Schnabel."],why:"Katzen packen und reißen Beute."},
+{day:4,type:"mc",q:"Rind: Welche Gebiss-Aussage passt?",a:"Pflanzenfresser mit breiten Backenzähnen.",o:["Pflanzenfresser mit breiten Backenzähnen.","Fleischfresser mit Fangzähnen.","Lebt nur im Wasser.","Hat Federn."],why:"Rinder zermahlen Pflanzenkost."},
+{day:4,type:"mc",q:"Warum hat ein Rind breite Backenzähne?",a:"Zum Zermahlen von Pflanzen.",o:["Zum Zermahlen von Pflanzen.","Zum Reißen von Beute.","Zum Fliegen.","Zum Atmen."],why:"Pflanzenfresser müssen Pflanzenmaterial gründlich zerkleinern."},
+{day:4,type:"mc",q:"Warum hat eine Katze große Eckzähne?",a:"Zum Festhalten und Töten/Reißen von Beute.",o:["Zum Festhalten und Töten/Reißen von Beute.","Zum Mahlen von Gras.","Zum Pollen sammeln.","Zum Atmen mit Kiemen."],why:"Das Gebiss passt zur Nahrung."},
+{day:4,type:"mc",q:"Was gehört in einen Tier-Steckbrief?",a:"Name, Klasse, Lebensraum, Nahrung, Fortpflanzung, Besonderheiten",o:["Name, Klasse, Lebensraum, Nahrung, Fortpflanzung, Besonderheiten","Nur Name und Farbe","Nur Lieblingsfutter","Nur ob es süß aussieht"],why:"Ein Steckbrief soll ein Tier biologisch beschreiben."},
+{day:4,type:"fill",q:"Ein Lebewesen kann wachsen und sich ____.",a:"entwickeln",hint:"Wachsen und ..."},
+{day:4,type:"fill",q:"Ein Lebewesen kann sich ____.",a:"fortpflanzen",hint:"Nachkommen bekommen"},
+{day:4,type:"fill",q:"Ein Steckbrief nennt auch den ____ des Tieres.",a:"Lebensraum",hint:"Wo lebt das Tier?"},
+{day:4,type:"fill",q:"Das Rind ist ein ____fresser.",a:"Pflanzen",hint:"Es frisst Gras und andere Pflanzen"},
+{day:4,type:"fill",q:"Die Katze ist ein ____fresser.",a:"Fleisch",hint:"Sie jagt Beute"},
+{day:4,type:"match",q:"Ordne Gebiss und Funktion zu.",pairs:[["Katze: Eckzähne","Beute packen/reißen"],["Katze: Reißzähne","Fleisch schneiden"],["Rind: Backenzähne","Pflanzen zermahlen"],["Rind: Schneidezähne","Pflanzen abbeißen"]]},
+{day:4,type:"match",q:"Ordne Kennzeichen und Beispiel zu.",pairs:[["Bewegung","Tier läuft weg"],["Wachstum/Entwicklung","Kind wird größer"],["Fortpflanzung","Nachkommen entstehen"],["Reizbarkeit","Pflanze wächst zum Licht"],["Stoffwechsel","Nahrung wird verwertet"]]},
+{day:4,type:"mc",q:"Ist ein Stein lebendig?",a:"Nein, er erfüllt die Kennzeichen des Lebendigen nicht.",o:["Nein, er erfüllt die Kennzeichen des Lebendigen nicht.","Ja, weil er hart ist.","Ja, weil er sich bewegen kann, wenn man ihn wirft.","Ja, weil er wächst."],why:"Bewegung durch Anschub zählt nicht als eigene Bewegung eines Lebewesens."},
+{day:4,type:"mc",q:"Ist Feuer lebendig?",a:"Nein, auch wenn es sich ausbreiten kann.",o:["Nein, auch wenn es sich ausbreiten kann.","Ja, weil es wächst.","Ja, weil es frisst.","Ja, weil es warm ist."],why:"Feuer hat keinen echten Stoffwechsel, keine Zellen und keine Fortpflanzung wie Lebewesen."},
+{day:4,type:"mc",q:"Was ist bei einem Tier-Steckbrief die 'Klasse'?",a:"Zum Beispiel Säugetier, Vogel oder Reptil.",o:["Zum Beispiel Säugetier, Vogel oder Reptil.","Die Schulklasse.","Das Alter des Tieres.","Die Farbe des Tieres."],why:"Hier ist die Wirbeltierklasse gemeint."},
+{day:4,type:"mc",q:"Welche Angabe passt in einen Steckbrief zum Igel?",a:"Säugetier",o:["Säugetier","Fisch","Amphibie","Vogel"],why:"Igel haben Fell/Stacheln, sind gleichwarm und säugen Junge."},
+{day:4,type:"flower",q:"Generalprobe: Blüte beschriften."},
+{day:4,type:"order",q:"Generalprobe: Evolution in Reihenfolge bringen.",items:["Variation","Selektion","Fortpflanzung/Vererbung","Mutation und Wiederholung"]},
+{day:4,type:"order",q:"Generalprobe: Bestäubung bis Frucht.",items:["Pollen landet auf der Narbe","Pollenschlauch wächst","Befruchtung","Samen entsteht","Frucht entsteht"]},
+{day:4,type:"mc",q:"Was ist sicher keine Wirbeltierklasse?",a:"Insekten",o:["Insekten","Fische","Vögel","Säugetiere"],why:"Insekten haben keine Wirbelsäule."},
+{day:4,type:"mc",q:"Welche Aussage zu Blütenpflanzen ist richtig?",a:"Die Blüte dient der Fortpflanzung.",o:["Die Blüte dient der Fortpflanzung.","Die Wurzel legt Eier.","Das Blatt säugt Junge.","Die Sprossachse hat Kiemen."],why:"Die Blüte enthält Fortpflanzungsorgane."},
+{day:4,type:"mc",q:"Welche Aussage zu Qualzucht ist richtig?",a:"Gewünschte Merkmale können für Tiere schädlich sein.",o:["Gewünschte Merkmale können für Tiere schädlich sein.","Qualzucht bedeutet immer gesunde Tiere.","Qualzucht gibt es nur bei Pflanzen.","Qualzucht ist dasselbe wie Bestäubung."],why:"Das ethische Problem ist die gesundheitliche Belastung."}
+];
+
+let questions=[],idx=0,score=0,wrong=[],modeName="";
+const getMistakes=()=>JSON.parse(localStorage.getItem("ntMistakes")||"[]");
+const setMistakes=a=>localStorage.setItem("ntMistakes",JSON.stringify([...new Set(a)]));
+function refreshMistakeInfo(){const n=getMistakes().length; document.getElementById("mistakeInfo").textContent=n?`Gespeicherte Fehlerfragen: ${n}`:"Noch keine gespeicherten Fehlerfragen."}
+refreshMistakeInfo();
+
+function shuffle(a){return [...a].sort(()=>Math.random()-0.5)}
+function goHome(){document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));home.classList.remove("hidden");refreshMistakeInfo()}
+function showCheat(){document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));cheat.classList.remove("hidden")}
+function resetMistakes(){localStorage.removeItem("ntMistakes");refreshMistakeInfo();alert("Fehlerliste gelöscht.")}
+function startDay(d){start("Tag "+d,Q.filter(x=>x.day===d))}
+function startMode(){start("Zufallsquiz",shuffle(Q).slice(0,25))}
+function startMistakes(){const ids=getMistakes();let qs=Q.filter(q=>ids.includes(q.q)); if(!qs.length){alert("Noch keine Fehler gespeichert.");return} start("Meine Fehler",qs)}
+function start(title,qs){idx=0;score=0;wrong=[];modeName=title;questions=shuffle(qs);document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));game.classList.remove("hidden");modeTitle.textContent=title;render()}
+function update(){score.textContent=`Punkte: ${window.score||score}/${questions.length}`;bar.style.width=(idx/questions.length*100)+"%"}
+function render(){update(); if(idx>=questions.length){finish();return} const q=questions[idx]; task.innerHTML=`<div class="question">${idx+1}. ${q.q}</div>`; if(q.type==="mc")renderMC(q); if(q.type==="fill")renderFill(q); if(q.type==="order")renderOrder(q); if(q.type==="match")renderMatch(q); if(q.type==="flower")renderFlower(q);}
+function next(){idx++;render()}
+function addFb(msg,ok){let p=document.createElement("div");p.className="feedback "+(ok?"good":"bad");p.textContent=msg;task.appendChild(p)}
+function addNext(){let b=document.createElement("button");b.textContent="Weiter ➜";b.style.marginTop="12px";b.onclick=next;task.appendChild(b)}
+function mark(ok,q){if(ok)score++;else{wrong.push(q.q);setMistakes(getMistakes().concat([q.q]))} update(); addNext()}
+function disableAll(){task.querySelectorAll("button,input,select").forEach(x=>{if(x.textContent!=="Weiter ➜")x.disabled=true})}
+
+function renderMC(q){let div=document.createElement("div");div.className="options";shuffle(q.o).forEach(o=>{let b=document.createElement("button");b.className="option";b.textContent=o;b.onclick=()=>{[...div.children].forEach(x=>x.disabled=true); if(o===q.a){b.classList.add("correct");addFb("Richtig. "+q.why,true);mark(true,q)}else{b.classList.add("wrong");[...div.children].find(x=>x.textContent===q.a)?.classList.add("correct");addFb("Noch nicht. "+q.why,false);mark(false,q)}};div.appendChild(b)});task.appendChild(div)}
+function renderFill(q){task.innerHTML+=`<p class="muted">Tipp: ${q.hint}</p><input id="ans" type="text" placeholder="Antwort eintippen..."><p><button onclick="checkFill()">Prüfen</button></p>`}
+function checkFill(){const q=questions[idx];const val=document.getElementById("ans").value.trim().toLowerCase();const ok=val.includes(q.a.toLowerCase());disableAll();addFb(ok?`Richtig: ${q.a}`:`Gesucht war: ${q.a}`,ok);mark(ok,q)}
+function renderOrder(q){let chosen=[];let box=document.createElement("div");let out=document.createElement("div");out.className="dropzone";out.innerHTML="<b>Deine Reihenfolge:</b><br>";shuffle(q.items).forEach(it=>{let s=document.createElement("span");s.className="token";s.textContent=it;s.onclick=()=>{if(chosen.includes(it))return;chosen.push(it);s.style.opacity=.35;out.innerHTML="<b>Deine Reihenfolge:</b><br>"+chosen.map(x=>`<span class='pill'>${x}</span>`).join("")};box.appendChild(s)});task.appendChild(box);task.appendChild(out);let b=document.createElement("button");b.textContent="Prüfen";b.onclick=()=>{let ok=JSON.stringify(chosen)===JSON.stringify(q.items);disableAll();addFb(ok?"Richtig sortiert.":"Noch nicht. Richtig: "+q.items.join(" → "),ok);mark(ok,q)};task.appendChild(b)}
+function renderMatch(q){let right=shuffle(q.pairs.map(p=>p[1]));let html="";q.pairs.forEach((p,i)=>{html+=`<div class="kv"><b>${p[0]}</b><select id="m${i}"><option value="">Bitte wählen</option>${right.map(r=>`<option>${r}</option>`).join("")}</select></div>`});task.innerHTML+=html+`<button onclick="checkMatch()">Prüfen</button>`}
+function checkMatch(){let q=questions[idx];let ok=true;q.pairs.forEach((p,i)=>{if(document.getElementById("m"+i).value!==p[1])ok=false});disableAll();addFb(ok?"Alles richtig zugeordnet.":"Noch nicht. Prüfe die Zuordnungen nochmal.",ok);mark(ok,q)}
+function renderFlower(q){
+const labels=["Kronblatt","Kelchblatt","Staubbeutel","Staubfaden","Narbe","Griffel","Fruchtknoten","Samenanlage"];
+const positions=[
+["A","Kronblatt",65,55],["B","Staubbeutel",145,95],["C","Narbe",215,65],["D","Griffel",215,145],
+["E","Fruchtknoten",215,230],["F","Samenanlage",255,252],["G","Kelchblatt",120,250],["H","Staubfaden",145,170]
+];
+let svg=`<svg viewBox="0 0 420 330" aria-label="Blütenskizze">
+<ellipse cx="210" cy="70" rx="42" ry="62" fill="#ffe6ef" stroke="#cc8aa0" stroke-width="2"/>
+<ellipse cx="155" cy="105" rx="42" ry="62" fill="#ffe6ef" stroke="#cc8aa0" stroke-width="2" transform="rotate(-40 155 105)"/>
+<ellipse cx="265" cy="105" rx="42" ry="62" fill="#ffe6ef" stroke="#cc8aa0" stroke-width="2" transform="rotate(40 265 105)"/>
+<ellipse cx="170" cy="180" rx="42" ry="62" fill="#ffe6ef" stroke="#cc8aa0" stroke-width="2" transform="rotate(35 170 180)"/>
+<ellipse cx="250" cy="180" rx="42" ry="62" fill="#ffe6ef" stroke="#cc8aa0" stroke-width="2" transform="rotate(-35 250 180)"/>
+<path d="M190 255 C175 285 145 295 110 275 C140 265 160 245 190 255" fill="#b7d98b" stroke="#6c9452" stroke-width="2"/>
+<path d="M230 255 C250 285 285 295 320 275 C285 265 260 245 230 255" fill="#b7d98b" stroke="#6c9452" stroke-width="2"/>
+<line x1="210" y1="95" x2="210" y2="225" stroke="#85a96b" stroke-width="9" stroke-linecap="round"/>
+<circle cx="210" cy="75" r="13" fill="#f3c26b" stroke="#b48534" stroke-width="2"/>
+<ellipse cx="210" cy="230" rx="28" ry="36" fill="#d9efb7" stroke="#78965c" stroke-width="2"/>
+<circle cx="225" cy="240" r="7" fill="#f8df85" stroke="#a47e2d"/>
+<circle cx="198" cy="246" r="7" fill="#f8df85" stroke="#a47e2d"/>
+<line x1="160" y1="120" x2="160" y2="205" stroke="#7da15e" stroke-width="5" stroke-linecap="round"/>
+<ellipse cx="160" cy="112" rx="10" ry="18" fill="#f1b34c" stroke="#a36f20" transform="rotate(-20 160 112)"/>
+<line x1="260" y1="120" x2="260" y2="205" stroke="#7da15e" stroke-width="5" stroke-linecap="round"/>
+<ellipse cx="260" cy="112" rx="10" ry="18" fill="#f1b34c" stroke="#a36f20" transform="rotate(20 260 112)"/>`;
+positions.forEach(p=>{svg+=`<circle class="labelDot" cx="${p[2]}" cy="${p[3]}" r="12"/><text class="flowerText" x="${p[2]-5}" y="${p[3]+5}">${p[0]}</text>`});
+svg+=`</svg>`;
+let selects=positions.map((p,i)=>`<div class="kv"><b>${p[0]}</b><select id="f${i}"><option value="">Bitte wählen</option>${shuffle(labels).map(l=>`<option>${l}</option>`).join("")}</select></div>`).join("");
+task.innerHTML+=`<div class="flowerWrap"><div>${svg}</div><div>${selects}<button onclick="checkFlower()">Prüfen</button><p class="muted">Tipp: Die Zeichnung ist bewusst schematisch. Es geht um die typischen Prüfungsbegriffe.</p></div></div>`;
+}
+function checkFlower(){const correct=["Kronblatt","Staubbeutel","Narbe","Griffel","Fruchtknoten","Samenanlage","Kelchblatt","Staubfaden"];let ok=true;correct.forEach((c,i)=>{if(document.getElementById("f"+i).value!==c)ok=false});disableAll();addFb(ok?"Blüte richtig beschriftet.":"Noch nicht. Richtig: A Kronblatt, B Staubbeutel, C Narbe, D Griffel, E Fruchtknoten, F Samenanlage, G Kelchblatt, H Staubfaden.",ok);mark(ok,questions[idx])}
+function finish(){document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));done.classList.remove("hidden");let pct=score/questions.length;stars.textContent=pct>=0.9?"⭐⭐⭐":pct>=0.75?"⭐⭐":pct>=0.6?"⭐":"↻";doneText.innerHTML=`Ergebnis: <span class="stat">${score} von ${questions.length}</span> Punkten (${Math.round(pct*100)}%).`;bar.style.width="100%";if(wrong.length){reviewBox.innerHTML="<h3>Nochmal anschauen:</h3>"+wrong.map(w=>`<p class='pill'>${w}</p>`).join("")+`<p><button onclick="startMistakes()">Fehler jetzt üben</button></p>`}else{reviewBox.innerHTML="<p class='good'><b>Keine Fehler in dieser Runde.</b></p>"}refreshMistakeInfo()}
+</script>
+</body>
+</html>
